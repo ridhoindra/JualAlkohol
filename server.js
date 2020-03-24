@@ -16,7 +16,7 @@ const db = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "",
-    database: "perkemahan"
+    database: "JualAlkohol"
   });
   db.connect(err => {
     if (err) throw err;
@@ -44,6 +44,36 @@ const db = mysql.createConnection({
   
     next();
   };
+
+app.post("/login/admin", (req, res, next) => {
+    //membuat end point untuk login akun
+    var username = req.body.username; // mengimpor email dari form
+    var password = req.body.password; //mengimpor password dari form
+    const sql = "SELECT * FROM admin WHERE username = ? AND password = ?"; // mencocokkan data form dengan data tabel
+    if (username && password) {
+      // jika email dan password ada
+      db.query(sql, [username, password], function(err, rows) {
+        if (err) throw err;
+        // jika error akan menampilkan errornya
+        else if (rows.length > 0) {
+          jwt.sign(
+            { username, password },
+            "SuperSecRetKey",
+            {
+              expiresIn: 60 * 60 * 6
+            },
+            (err, token) => {
+              res.send(token);
+            }
+          );
+        } else {
+          res.json({
+            message: "email or password is incorrect"
+          }); // jika semua if tidak terpenuhi maka menampilkan kalimat tersebut
+        }
+      });
+    }
+  });
 
 
 
@@ -147,5 +177,85 @@ app.post("/daftar", (req, res) => {
       }
     });
   });
+
+
+
+  // CRUD BARANG KEMAH
+
+app.post("/tambah", isAuthorized, function(request, result) {
+  let data = request.body;
+
+  var barang = {
+    // membuat variabel data untuk menampung data dari form
+    namaBarang: data.namaBarang, // mengambil data dari form
+    deskripsi: data.deskripsi, // mengambil data dari form
+    stok: data.stok,
+    harga: data.harga // mengambil data dari form
+  };
+
+  db.query("insert into barang set ?", barang, (err, result) => {
+    if (err) throw err;
+  });
+
+  result.json({
+    success: true,
+    message: "Data has been added"
+  });
+});
+
+app.put("/edit/:id", isAuthorized, function(req, res) {
+  let data = // membuat variabel data yang berisi sintaks untuk mengupdate tabel di database
+    'UPDATE barang SET namaBarang="' +
+    req.body.namaBarang +
+    '", deskripsi="' +
+    req.body.deskripsi +
+    '", stok="' +
+    req.body.stok +
+    '", harga="' +
+    req.body.harga +
+    '" where id=' +
+    req.params.id;
+  db.query(data, function(err, result) {
+    // mengupdate data di database
+    if (err) throw err;
+    // jika gagal maka akan keluar error
+    else {
+      result.json({
+        success: true,
+        message: "Data has been updated"
+      });
+    }
+  });
+});
+
+app.delete("/delete/:id", isAuthorized, function(req, res) {
+  // membuat end point delete
+  let id = "delete from barang where id=" + req.params.id;
+
+  db.query(id, function(err, result) {
+    // mengupdate data di database
+    if (err) throw err;
+    // jika gagal maka akan keluar error
+    else {
+      res.json({
+        success: true,
+        message: "Data has been Deleted"
+      });
+    }
+  });
+});
+
+app.get("/barang", isAuthorized, (req, res) => {
+  db.query(`select * from barang`,
+    (err, result) => {
+      if (err) throw err;
+
+      res.json({
+        message: "succes get user's books",
+        data: result
+      });
+    }
+  );
+});
 
 app.listen(port, () => console.log(`Example app listening on port 3000!`))
