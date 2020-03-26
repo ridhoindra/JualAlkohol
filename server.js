@@ -16,7 +16,7 @@ const db = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "",
-    database: "JualAlkohol"
+    database: "jualalkohol"
   });
   db.connect(err => {
     if (err) throw err;
@@ -119,7 +119,7 @@ app.post("/daftar", (req, res) => {
       nama: req.body.nama, // mengambil data nama dari form
       email: req.body.email, // mengambil data email dari form
       password: req.body.password, // mengambil data password dari form
-      no_telp: req.body.no_telp,
+      no_telp: req.body.telepon,
       alamat: req.body.alamat
     };
     db.query("INSERT INTO akun SET?", data, function(err, result) {
@@ -134,7 +134,7 @@ app.post("/daftar", (req, res) => {
     });
   });
   
-  app.put("/editUser/:id", isAuthorized, function(req, res) {
+  app.put("/editUser/:id",isAuthorized, function(req, res) {
     let data = // membuat variabel data yang berisi sintaks untuk mengupdate tabel di database
       'UPDATE akun SET nama="' +
       req.body.nama +
@@ -161,7 +161,7 @@ app.post("/daftar", (req, res) => {
     });
   });
   
-  app.delete("/deleteUser/:id", isAuthorized, function(req, res) {
+  app.delete("/deleteUser/:id", function(req, res) {
     // membuat end point delete
     let id = "delete from akun where id=" + req.params.id;
   
@@ -182,7 +182,7 @@ app.post("/daftar", (req, res) => {
 
   // CRUD BARANG KEMAH
 
-app.post("/tambah", isAuthorized, function(request, result) {
+app.post("/tambah",isAuthorized, function(request, result) {
   let data = request.body;
 
   var barang = {
@@ -203,7 +203,7 @@ app.post("/tambah", isAuthorized, function(request, result) {
   });
 });
 
-app.put("/edit/:id", isAuthorized, function(req, res) {
+app.put("/edit/:id",isAuthorized, function(req, res) {
   let data = // membuat variabel data yang berisi sintaks untuk mengupdate tabel di database
     'UPDATE barang SET namaBarang="' +
     req.body.namaBarang +
@@ -220,7 +220,7 @@ app.put("/edit/:id", isAuthorized, function(req, res) {
     if (err) throw err;
     // jika gagal maka akan keluar error
     else {
-      result.json({
+      res.json({
         success: true,
         message: "Data has been updated"
       });
@@ -228,7 +228,7 @@ app.put("/edit/:id", isAuthorized, function(req, res) {
   });
 });
 
-app.delete("/delete/:id", isAuthorized, function(req, res) {
+app.delete("/delete/:id",isAuthorized, function(req, res) {
   // membuat end point delete
   let id = "delete from barang where id=" + req.params.id;
 
@@ -245,7 +245,7 @@ app.delete("/delete/:id", isAuthorized, function(req, res) {
   });
 });
 
-app.get("/barang", isAuthorized, (req, res) => {
+app.get("/barang",isAuthorized, (req, res) => {
   db.query(`select * from barang`,
     (err, result) => {
       if (err) throw err;
@@ -256,6 +256,170 @@ app.get("/barang", isAuthorized, (req, res) => {
       });
     }
   );
+});
+
+app.get("/barang/:id",isAuthorized, (req, res) => {
+  db.query(`select * from barang where id=`+req.params.id,
+    (err, result) => {
+      if (err) throw err;
+
+      res.json({
+        message: "succes get user's books",
+        data: result
+      });
+    }
+  );
+});
+
+
+
+// CRUD TRANSAKSI
+
+app.post("/barang/:id/take", isAuthorized, (req, res) => {
+  let data = req.body;
+  db.query(`select * from barang where id =`+req.params.id,(err,result)=>{
+    if (err) throw err;
+
+    if(result.length <= 0){
+      res.json({
+        success: false,
+        message: 'Tidak ada barang dengan id '+ req.params.id
+      })
+    }else{
+      let barang = result[0]
+      db.query(
+        `
+          insert into transaksi (id_akun, id_barang, jumlah, harga, total_harga, metode_pembayaran)
+          values ('` +
+          data.id_akun +
+          `', '` +
+          req.params.id +
+          `', '` +
+          data.jumlah +
+          `', '` +
+          barang.harga +
+          `', '` +
+          data.jumlah +
+          `' * '` +
+          barang.harga +
+          `', '` +
+          data.metode +
+          `')
+          `,
+        (err, result) => {
+          if (err) throw err;
+        }
+      );
+    
+      db.query(
+        `
+          update barang
+          set stok = stok - '` +
+          data.jumlah +
+          `'
+          where id = '` +
+          req.params.id +
+          `'
+          `,
+        (err, result) => {
+          if (err) throw err;
+        }
+      );
+    
+      res.json({
+        message: "Book has been taked by user"
+      });
+      
+    }
+  })
+
+
+});
+
+app.get("/transaksi", isAuthorized, (req, res) => {
+  // let data = req.params.id;
+  db.query(`select * from transaksi`,
+    (err, result) => {
+      if (err) throw err;
+
+      res.json({
+        message: "succes get history",
+        data: result
+      });
+    }
+  );
+});
+
+app.get("/transaksi/users/:id", isAuthorized, (req, res) => {
+  // let data = req.params.id;
+  db.query(`select * from transaksi where transaksi.id_akun = `+req.params.id,
+    (err, result) => {
+      if (err) throw err;
+
+      res.json({
+        message: "succes get user's books",
+        data: result
+      });
+    }
+  );
+});
+
+app.get("/transaksi/barang/:id", isAuthorized, (req, res) => {
+  // let data = req.params.id;
+  db.query(`select * from transaksi where transaksi.id_barang = `+req.params.id,
+    (err, result) => {
+      if (err) throw err;
+
+      res.json({
+        message: "succes get user's books",
+        data: result
+      });
+    }
+  );
+});
+
+app.delete("/transaksi/batal/:id", isAuthorized, function(req, res) {
+  // membuat end point delete
+
+  db.query('select * from transaksi where id='+req.params.id,(err,result)=>{
+    if(err) throw err;
+
+    if(result.length <= 0){
+      res.json({
+        success: false,
+        message: 'Tidak ada transaksi dengan id '+ req.params.id
+      })
+    }else{
+      let transaksi = result[0]
+
+      db.query(
+        `
+          update barang
+          set stok = stok + '` +
+          transaksi.jumlah +
+          `'
+          where id = '` +
+          transaksi.id_barang +
+          `'
+          `,
+        (err, result) => {
+          if (err) throw err;
+        }
+      );
+
+      db.query('delete from transaksi where id='+req.params.id, function(err, result) {
+        // mengupdate data di database
+        if (err) throw err;
+        // jika gagal maka akan keluar error
+        else {
+          res.json({
+            success: true,
+            message: "Transaksi berhasil dibatalkan"
+          });
+        }
+      });
+    }
+  })
 });
 
 app.listen(port, () => console.log(`Example app listening on port 3000!`))
