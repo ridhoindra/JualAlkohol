@@ -27,7 +27,7 @@ const db = mysql.createConnection({
     if (typeof request.headers["token"] == "undefined") {
       return result.status(403).json({
         success: false,
-        message: "Unauthorized. Token is not provided"
+        message: "Silahkan Login terlebih dahulu"
       });
     }
   
@@ -37,7 +37,7 @@ const db = mysql.createConnection({
       if (err) {
         return result.status(401).json({
           success: false,
-          message: "Unauthorized. Token is invalid"
+          message: "Silahkan login terlebih dahulu"
         });
       }
     });
@@ -68,7 +68,7 @@ app.post("/login/admin", (req, res, next) => {
           );
         } else {
           res.json({
-            message: "email or password is incorrect"
+            message: "Username atau Password salah"
           }); // jika semua if tidak terpenuhi maka menampilkan kalimat tersebut
         }
       });
@@ -104,7 +104,7 @@ app.post("/login", (req, res) => {
           );
         } else {
           res.json({
-            message: "email or password is incorrect"
+            message: "Email atau Password salah"
           }); // jika semua if tidak terpenuhi maka menampilkan kalimat tersebut
         }
       });
@@ -128,7 +128,7 @@ app.post("/daftar", (req, res) => {
       // jika gagal maka akan keluar error
       else {
         res.json({
-          message: "Data has been added"
+          message: "Data user masuk"
         });
       }
     });
@@ -155,13 +155,14 @@ app.post("/daftar", (req, res) => {
       else {
         res.json({
           success: true,
-          message: "Data has been updated"
+          message: "Data berhasil diupdate",
+          data: result
         });
       }
     });
   });
   
-  app.delete("/deleteUser/:id", function(req, res) {
+  app.delete("/deleteUser/:id",isAuthorized, function(req, res) {
     // membuat end point delete
     let id = "delete from akun where id=" + req.params.id;
   
@@ -172,7 +173,8 @@ app.post("/daftar", (req, res) => {
       else {
         res.json({
           success: true,
-          message: "Data has been Deleted"
+          message: "Data berhasil dihapus",
+          data: result
         });
       }
     });
@@ -182,7 +184,7 @@ app.post("/daftar", (req, res) => {
 
   // CRUD BARANG KEMAH
 
-app.post("/tambah",isAuthorized, function(request, result) {
+app.post("/barang",isAuthorized, function(request, result) {
   let data = request.body;
 
   var barang = {
@@ -199,11 +201,11 @@ app.post("/tambah",isAuthorized, function(request, result) {
 
   result.json({
     success: true,
-    message: "Data has been added"
+    message: "Data barang telah masuk"
   });
 });
 
-app.put("/edit/:id",isAuthorized, function(req, res) {
+app.put("/barang/:id",isAuthorized, function(req, res) {
   let data = // membuat variabel data yang berisi sintaks untuk mengupdate tabel di database
     'UPDATE barang SET namaBarang="' +
     req.body.namaBarang +
@@ -222,13 +224,13 @@ app.put("/edit/:id",isAuthorized, function(req, res) {
     else {
       res.json({
         success: true,
-        message: "Data has been updated"
+        message: "Data berhasil diupdate"
       });
     }
   });
 });
 
-app.delete("/delete/:id",isAuthorized, function(req, res) {
+app.delete("/barang/:id",isAuthorized, function(req, res) {
   // membuat end point delete
   let id = "delete from barang where id=" + req.params.id;
 
@@ -239,7 +241,7 @@ app.delete("/delete/:id",isAuthorized, function(req, res) {
     else {
       res.json({
         success: true,
-        message: "Data has been Deleted"
+        message: "Data berhasil dihapus"
       });
     }
   });
@@ -251,7 +253,7 @@ app.get("/barang",isAuthorized, (req, res) => {
       if (err) throw err;
 
       res.json({
-        message: "succes get user's books",
+        message: "berhasil menampilkan data",
         data: result
       });
     }
@@ -264,7 +266,7 @@ app.get("/barang/:id",isAuthorized, (req, res) => {
       if (err) throw err;
 
       res.json({
-        message: "succes get user's books",
+        message: "berhasil menampilkan data dengan id = "+req.params.id,
         data: result
       });
     }
@@ -275,7 +277,7 @@ app.get("/barang/:id",isAuthorized, (req, res) => {
 
 // CRUD TRANSAKSI
 
-app.post("/barang/:id/take", isAuthorized, (req, res) => {
+app.post("/barang/:id/beli", isAuthorized, (req, res) => {
   let data = req.body;
   db.query(`select * from barang where id =`+req.params.id,(err,result)=>{
     if (err) throw err;
@@ -327,7 +329,7 @@ app.post("/barang/:id/take", isAuthorized, (req, res) => {
       );
     
       res.json({
-        message: "Book has been taked by user"
+        message: barang.namaBarang+" berhasil dibeli dengan jumlah "+data.jumlah+" dan total harga "+data.jumlah*barang.harga+" dibayar dengan membayar melalui "+data.metode
       });
       
     }
@@ -343,7 +345,7 @@ app.get("/transaksi", isAuthorized, (req, res) => {
       if (err) throw err;
 
       res.json({
-        message: "succes get history",
+        message: "berhasil menampilkan data transaksi",
         data: result
       });
     }
@@ -357,7 +359,7 @@ app.get("/transaksi/users/:id", isAuthorized, (req, res) => {
       if (err) throw err;
 
       res.json({
-        message: "succes get user's books",
+        message: "berhasil menampilkan data transaksi dengan id user = "+req.params.id,
         data: result
       });
     }
@@ -371,7 +373,7 @@ app.get("/transaksi/barang/:id", isAuthorized, (req, res) => {
       if (err) throw err;
 
       res.json({
-        message: "succes get user's books",
+        message: "berhasil menampilkan data transaksi dengan id barang = "+req.params.id,
         data: result
       });
     }
@@ -422,4 +424,4 @@ app.delete("/transaksi/batal/:id", isAuthorized, function(req, res) {
   })
 });
 
-app.listen(port, () => console.log(`Example app listening on port 3000!`))
+app.listen(port, () => console.log(`NIKI SERVER E MLAMPAH TEN PORT 3000 :v`))
