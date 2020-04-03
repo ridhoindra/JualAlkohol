@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 27, 2020 at 01:15 PM
+-- Generation Time: Apr 03, 2020 at 02:24 PM
 -- Server version: 10.4.11-MariaDB
 -- PHP Version: 7.4.1
 
@@ -64,8 +64,8 @@ CREATE TABLE `barang` (
 --
 
 INSERT INTO `barang` (`id`, `namaBarang`, `deskripsi`, `stok`, `harga`) VALUES
-(2, 'Alkohol 60ml', 'ini Alkohol etanol 60ml.Tidak untuk dikonsumsi secara sembarangan', 15, 7500),
-(3, 'Alkohol 50ml', 'ini alkohol 50ml BROOO', 5, 1000),
+(2, 'Alkohol 60ml', 'ini Alkohol etanol 60ml.Tidak untuk dikonsumsi secara sembarangan', 14, 7500),
+(3, 'Alkohol 50ml', 'ini alkohol 50ml BROOO', 12, 1000),
 (4, 'Alkohol 70% 50ml', 'Ini Alkohol 70% yang berisi 50ml dalam 1 botol', 7, 2000000);
 
 -- --------------------------------------------------------
@@ -91,8 +91,6 @@ CREATE TABLE `transaksi` (
 --
 
 INSERT INTO `transaksi` (`id`, `id_akun`, `id_barang`, `jumlah`, `harga`, `total_harga`, `metode_pembayaran`, `created_at`, `update_at`) VALUES
-(2, 2, 3, 2, 1000, 2000, 'BRI', '2020-03-26 06:51:22', '2020-03-26 06:51:22'),
-(3, 3, 3, 5, 1000, 5000, 'BRI', '2020-03-26 06:54:11', '2020-03-26 06:54:11'),
 (13, 2, 4, 5, 2000000, 10000000, 'BRI', '2020-03-27 11:49:52', '2020-03-27 11:49:52');
 
 --
@@ -137,7 +135,7 @@ ALTER TABLE `barang`
 -- AUTO_INCREMENT for table `transaksi`
 --
 ALTER TABLE `transaksi`
-  MODIFY `id` int(12) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(12) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

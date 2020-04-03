@@ -128,6 +128,7 @@ app.post("/daftar", (req, res) => {
       // jika gagal maka akan keluar error
       else {
         res.json({
+          success: true,
           message: "Data user masuk"
         });
       }
@@ -155,8 +156,7 @@ app.post("/daftar", (req, res) => {
       else {
         res.json({
           success: true,
-          message: "Data berhasil diupdate",
-          data: result
+          message: "Data berhasil diupdate"
         });
       }
     });
@@ -173,8 +173,7 @@ app.post("/daftar", (req, res) => {
       else {
         res.json({
           success: true,
-          message: "Data berhasil dihapus",
-          data: result
+          message: "Data berhasil dihapus"
         });
       }
     });
